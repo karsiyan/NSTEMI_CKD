@@ -5,11 +5,12 @@ for (pkg in req_lib) {
     library(pkg, character.only = TRUE)}}
 
 getwd()
-setwd("C:/Users/Changok/Documents/project/NSTEMI_CKD")
+setwd("/Users/seochangok/Documents/NSTEMI_CKD")
 
 rm(list=ls())
-df <- read.csv("./NSTEMI_CKD_0128.csv", fileEncoding = 'euc-kr') # 최종 정제된 데이터 (n = 11605)
+df <- read.csv("./NSTEMI_CKD_0128.csv", fileEncoding = 'euc-kr') # 최종 정제된 데이터 (n = 11910)
 df2 <- data.frame(df)
+
 df$acd12 <- ifelse(df$acd12 == 1 & df$acdfu < 366, 1, 0)
 df$cd12 <- ifelse(df$cd12 == 1 & df$cdfu < 366, 1, 0)
 df$mi12 <- ifelse(df$mi12 == 1 & df$mifu < 366, 1, 0)
@@ -122,13 +123,18 @@ cva12_km <- ggsurvplot(cva12, title = "Stroke", legend = c(0.15, 0.2), legend.ti
                        font.x = c(15, "bold"), font.y = c(15, "bold"), font.tickslab = c(15))
 
 acd12_PRF <- survfit(Surv(acdfu, acd12) ~ PCI_group, data = df_PRF)
-acd12_PRF_km <- ggsurvplot(acd12_PRF, title = "All cause Death (eGFR >= 60)", legend = c(0.15, 0.2), legend.title = "",
+acd12_PRF_km <- ggsurvplot(acd12_PRF, title = "All cause Death (eGFR >= 60)", legend = c(0.15, 0.4), legend.title = "",
                            legend.labs = c('DIS', 'EIS'),
-                           censor = F, risk.table.title = "No. at Risk", risk.table = T, risk.table.height = 0.3,
-                           conf.int = F, pval = T, pval.size = 6, pval.coord = c(1, 0.9),
-                           break.time.by = 120, xlim = c(0, 365), ylim = c(0.8, 1.0),
+                           censor = F, risk.table.title = "No. at Risk", risk.table = T, risk.table.height = 0.2, fontsize = 5,
+                           conf.int = F, pval = T, pval.size = 7, pval.coord = c(1, 0.83),
+                           break.time.by = 90, xlim = c(0, 365), ylim = c(0.8, 1.0),
                            xlab = "Time(days)", ylab = "Probability",
-                           font.x = c(15, "bold"), font.y = c(15, "bold"), font.tickslab = c(15))
+                           font.main = c(20, "bold"), font.x = c(18, "bold"), font.xlab = c(18), font.y = c(18, "bold"), font.ylab = c(18),
+                           font.legend = c(16, "bold"), font.tickslab = c(18))
+acd12_PRF_km$table <- acd12_PRF_km$table + theme_cleantable()
+acd12_PRF_km$plot <- acd12_PRF_km$plot + annotate("text", x = 1, y = 0.81, size = 6, hjust = 0,
+                                                  label = "Adjusted hazard ratio 0.95 (95% CI 0.70 - 1.29)")
+acd12_PRF_km
 cd12_PRF <- survfit(Surv(cdfu, cd12) ~ PCI_group, data = df_PRF)
 cd12_PRF_km <- ggsurvplot(cd12_PRF, title = "Cardiac Death (eGFR >= 60)", legend = c(0.15, 0.2), legend.title = "", 
                           legend.labs = c('DIS', 'EIS'),
@@ -154,13 +160,18 @@ cva12_PRF_km <- ggsurvplot(cva12_PRF, title = "Stroke (eGFR >= 60)", legend = c(
                            xlab = "Time(days)", ylab = "Probability",
                            font.x = c(15, "bold"), font.y = c(15, "bold"), font.tickslab = c(15))
 acd12_DRF <- survfit(Surv(acdfu, acd12) ~ PCI_group, data = df_DRF)
-acd12_DRF_km <- ggsurvplot(acd12_DRF, title = "All cause Death (eGFR < 60)", legend = c(0.15, 0.2), legend.title = "",
+acd12_DRF_km <- ggsurvplot(acd12_DRF, title = "All cause Death (eGFR < 60)", legend = c(0.15, 0.4), legend.title = "",
                            legend.labs = c('DIS', 'EIS'),
-                           censor = F, risk.table.title = "No. at Risk", risk.table = T, risk.table.height = 0.3,
-                           conf.int = F, pval = T, pval.size = 6, pval.coord = c(1, 0.9),
-                           break.time.by = 120, xlim = c(0, 365), ylim = c(0.8, 1.0),
+                           censor = F, risk.table.title = "No. at Risk", risk.table = T, risk.table.height = 0.2, fontsize = 5,
+                           conf.int = F, pval = T, pval.size = 7, pval.coord = c(1, 0.83),
+                           break.time.by = 90, xlim = c(0, 365), ylim = c(0.8, 1.0),
                            xlab = "Time(days)", ylab = "Probability",
-                           font.x = c(15, "bold"), font.y = c(15, "bold"), font.tickslab = c(15))
+                           font.main = c(20, "bold"), font.x = c(18, "bold"), font.xlab = c(18), font.y = c(18, "bold"), font.ylab = c(18),
+                           font.legend = c(16, "bold"), font.tickslab = c(18))
+acd12_DRF_km$table <- acd12_DRF_km$table + theme_cleantable()
+acd12_DRF_km$plot <- acd12_DRF_km$plot + annotate("text", x = 1, y = 0.81, size = 6, hjust = 0,
+                                                  label = "Adjusted hazard ratio 1.43 (95% CI 1.12 - 1.83)")
+acd12_DRF_km
 cd12_DRF <- survfit(Surv(cdfu, cd12) ~ PCI_group, data = df_DRF)
 cd12_DRF_km <- ggsurvplot(cd12_DRF, title = "Cardiac Death (eGFR < 60)", legend = c(0.15, 0.2), legend.title = "", 
                           legend.labs = c('DIS', 'EIS'),
@@ -587,4 +598,3 @@ ggplot(pred_uni) +
   geom_hline(yintercept = 1, col='red') +
   labs(y = "Hazard Ratio") +
   theme_bw()
-
