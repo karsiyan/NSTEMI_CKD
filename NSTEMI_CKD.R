@@ -1,4 +1,4 @@
-req_lib <- c('epiDisplay','lubridate','moonBook','ztable','survminer','knitr','kableExtra','tidyr','survivalAnalysis','rms','survival','dplyr','ggplot2','VIM')
+req_lib <- c('epiDisplay','lubridate','moonBook','ztable','survminer','knitr','kableExtra','tidyr','survivalAnalysis','rms','survival','dplyr','ggplot2','VIM','analyzer')
 for (pkg in req_lib) {
   if (!(pkg %in% rownames(installed.packages()))) {install.packages(pkg)}
   else {update.packages(pkg)
@@ -57,6 +57,9 @@ ggforest(acd12_PRF, data=df_PRF, main="Cox proportional hazard ratio of all caus
 acd12_DRF <- coxph(Surv(acdfu, acd12) ~ PCI_time_2group_early+grace+Vessel_multi+Revasc+atri_fibril+Hb+male+age+BMI+Current_smoker+HTN+DM+Dyslipidemia+Prev_MI+Prev_PCI+Prev_CABG+Prev_CVA+SBP+Cardiogenic_shock+LVEF, data = df_DRF)
 cox.display(acd12_DRF, crude.p.value = T, decimal=2)
 ggforest(acd12_DRF, data=df_DRF, main="Cox proportional hazard ratio of all cause death in GFR < 60")
+
+hr_acd12 <- coxph(Surv(acdfu, acd12) ~ GFR_group, data = df)
+hr_acd12
 
 ## Cardiac death
 cd12_PRF <- coxph(Surv(cdfu, cd12) ~ PCI_time_2group_early+grace+Vessel_multi+Revasc+atri_fibril+Hb+male+age+BMI+Current_smoker+HTN+DM+Dyslipidemia+Prev_MI+Prev_PCI+Prev_CABG+Prev_CVA+SBP+Cardiogenic_shock+LVEF, data = df_PRF)
