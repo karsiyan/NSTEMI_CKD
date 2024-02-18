@@ -1,4 +1,4 @@
-req_lib <- c('epiDisplay','lubridate','moonBook','ztable','survminer','knitr','kableExtra','tidyr','survivalAnalysis','rms','survival','dplyr','ggplot2','VIM','analyzer')
+req_lib <- c('epiDisplay','lubridate','moonBook','ztable','survminer','knitr','kableExtra','tidyr','survivalAnalysis','rms','survival','dplyr','ggplot2','VIM','analyzer','pec')
 for (pkg in req_lib) {
   if (!(pkg %in% rownames(installed.packages()))) {install.packages(pkg)}
   else {update.packages(pkg)
@@ -26,6 +26,8 @@ df$PCI_time_2group_early <- 1 - df$PCI_time_2group # HR 구할 때 필요
 
 df_PRF <- subset(df, GFR_2group == 0)
 df_DRF <- subset(df, GFR_2group == 1)
+df_EIS <- subset(df, PCI_time_2group == 0)
+df_DIS <- subset(df, PCI_time_2group == 1)
 df_lowGRS <- subset(df, GRS_group == 'lowGRS')
 df_highGRS <- subset(df, GRS_group == 'highGRS')
 df_PRF_lowGRS <- subset(df_PRF, GRS_group == 'lowGRS')
@@ -87,6 +89,100 @@ ggforest(cva12_PRF, data=df_PRF, main="Cox proportional hazard ratio of stroke e
 cva12_DRF <- coxph(Surv(cvafu, cva12) ~ PCI_time_2group_early+grace+Vessel_multi+Revasc+atri_fibril+Hb+male+age+BMI+Current_smoker+HTN+DM+Dyslipidemia+Prev_MI+Prev_PCI+Prev_CABG+Prev_CVA+SBP+Cardiogenic_shock+LVEF, data = df_DRF)
 cox.display(cva12_DRF, crude.p.value = T, decimal=2)
 ggforest(cva12_DRF, data=df_DRF, main="Cox proportional hazard ratio of stroke event in GFR < 60")
+
+
+# ==============================================================================
+# predictSurvProb
+df_EIS$pred_acd <- predictSurvProb(coxph(Surv(acdfu, acd12) ~ GFR, data = df_EIS, x = TRUE), newdata = df_EIS, times = 365)
+df_EIS$pred_acd <- (1 - df_EIS$pred_acd) * 100
+df_DIS$pred_acd <- predictSurvProb(coxph(Surv(acdfu, acd12) ~ GFR, data = df_DIS, x = TRUE), newdata = df_DIS, times = 365)
+df_DIS$pred_acd <- (1 - df_DIS$pred_acd) * 100
+df_EIS$pred_cd <- predictSurvProb(coxph(Surv(cdfu, cd12) ~ GFR, data = df_EIS, x = TRUE), newdata = df_EIS, times = 365)
+df_EIS$pred_cd <- (1 - df_EIS$pred_cd) * 100
+df_DIS$pred_cd <- predictSurvProb(coxph(Surv(cdfu, cd12) ~ GFR, data = df_DIS, x = TRUE), newdata = df_DIS, times = 365)
+df_DIS$pred_cd <- (1 - df_DIS$pred_cd) * 100
+df_EIS$pred_mi <- predictSurvProb(coxph(Surv(mifu, mi12) ~ GFR, data = df_EIS, x = TRUE), newdata = df_EIS, times = 365)
+df_EIS$pred_mi <- (1 - df_EIS$pred_mi) * 100
+df_DIS$pred_mi <- predictSurvProb(coxph(Surv(mifu, mi12) ~ GFR, data = df_DIS, x = TRUE), newdata = df_DIS, times = 365)
+df_DIS$pred_mi <- (1 - df_DIS$pred_mi) * 100
+df_EIS$pred_cva <- predictSurvProb(coxph(Surv(cvafu, cva12) ~ GFR, data = df_EIS, x = TRUE), newdata = df_EIS, times = 365)
+df_EIS$pred_cva <- (1 - df_EIS$pred_cva) * 100
+df_DIS$pred_cva <- predictSurvProb(coxph(Surv(cvafu, cva12) ~ GFR, data = df_DIS, x = TRUE), newdata = df_DIS, times = 365)
+df_DIS$pred_cva <- (1 - df_DIS$pred_cva) * 100
+
+pred_ACD <- ggplot() + 
+  geom_point(data = df_EIS, aes(x = GFR, y = pred_acd), color = "#56bcc2", alpha = 0.5, size = 0.8) +
+  geom_point(data = df_DIS, aes(x = GFR, y = pred_acd), color = "#e77d72", alpha = 0.5, size = 0.8) +
+  annotate('text', x = 150, y = 14, size = 7, hjust = 0, color = "#56bcc2", label = "\u2014", fontface = 2) +
+  annotate('text', x = 161, y = 14, size = 6, hjust = 0, label = "EIS", fontface = 2) +
+  annotate('text', x = 150, y = 11.5, size = 7, hjust = 0, color = "#e77d72", label = "\u2014", fontface = 2) +
+  annotate('text', x = 161, y = 11.5, size = 6, hjust = 0, label = "DIS", fontface = 2) +
+  coord_cartesian(xlim = c(0, 200), ylim = c(0, 35)) +
+  labs(title = 'Estimated All-cause mortality at 12 month', x = "eGFR", y = "Mortality (%)") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_text(size = 18, face = "bold"),
+    axis.title.y = element_text(size = 18, face = "bold"),
+    axis.text.x = element_text(size = 18),
+    axis.text.y = element_text(size = 18)
+  )
+pred_CD <- ggplot() + 
+  geom_point(data = df_EIS, aes(x = GFR, y = pred_cd), color = "#56bcc2", alpha = 0.5, size = 0.8) +
+  geom_point(data = df_DIS, aes(x = GFR, y = pred_cd), color = "#e77d72", alpha = 0.5, size = 0.8) +
+  annotate('text', x = 150, y = 14, size = 7, hjust = 0, color = "#56bcc2", label = "\u2014", fontface = 2) +
+  annotate('text', x = 161, y = 14, size = 6, hjust = 0, label = "EIS", fontface = 2) +
+  annotate('text', x = 150, y = 11.5, size = 7, hjust = 0, color = "#e77d72", label = "\u2014", fontface = 2) +
+  annotate('text', x = 161, y = 11.5, size = 6, hjust = 0, label = "DIS", fontface = 2) +
+  coord_cartesian(xlim = c(0, 200), ylim = c(0, 35)) +
+  labs(title = 'Estimated Cardiac Mortality at 12 month', x = "eGFR", y = "Mortality (%)") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_text(size = 18, face = "bold"),
+    axis.title.y = element_text(size = 18, face = "bold"),
+    axis.text.x = element_text(size = 18),
+    axis.text.y = element_text(size = 18)
+  )
+pred_MI <- ggplot() + 
+  geom_point(data = df_EIS, aes(x = GFR, y = pred_mi), color = "#56bcc2", alpha = 0.5, size = 0.8) +
+  geom_point(data = df_DIS, aes(x = GFR, y = pred_mi), color = "#e77d72", alpha = 0.5, size = 0.8) +
+  annotate('text', x = 150, y = 14, size = 7, hjust = 0, color = "#56bcc2", label = "\u2014", fontface = 2) +
+  annotate('text', x = 161, y = 14, size = 6, hjust = 0, label = "EIS", fontface = 2) +
+  annotate('text', x = 150, y = 11.5, size = 7, hjust = 0, color = "#e77d72", label = "\u2014", fontface = 2) +
+  annotate('text', x = 161, y = 11.5, size = 6, hjust = 0, label = "DIS", fontface = 2) +
+  coord_cartesian(xlim = c(0, 200), ylim = c(0, 35)) +
+  labs(title = 'Estimated non-fatal MI at 12 month', x = "eGFR", y = "Mortality (%)") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_text(size = 18, face = "bold"),
+    axis.title.y = element_text(size = 18, face = "bold"),
+    axis.text.x = element_text(size = 18),
+    axis.text.y = element_text(size = 18)
+  )
+pred_CVA <- ggplot() + 
+  geom_point(data = df_EIS, aes(x = GFR, y = pred_cva), color = "#56bcc2", alpha = 0.5, size = 0.8) +
+  geom_point(data = df_DIS, aes(x = GFR, y = pred_cva), color = "#e77d72", alpha = 0.5, size = 0.8) +
+  annotate('text', x = 150, y = 14, size = 7, hjust = 0, color = "#56bcc2", label = "\u2014", fontface = 2) +
+  annotate('text', x = 161, y = 14, size = 6, hjust = 0, label = "EIS", fontface = 2) +
+  annotate('text', x = 150, y = 11.5, size = 7, hjust = 0, color = "#e77d72", label = "\u2014", fontface = 2) +
+  annotate('text', x = 161, y = 11.5, size = 6, hjust = 0, label = "DIS", fontface = 2) +
+  coord_cartesian(xlim = c(0, 200), ylim = c(0, 35)) +
+  labs(title = 'Estimated Cerebrovascular Accident at 12 month', x = "eGFR", y = "Mortality (%)") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title.x = element_text(size = 18, face = "bold"),
+    axis.title.y = element_text(size = 18, face = "bold"),
+    axis.text.x = element_text(size = 18),
+    axis.text.y = element_text(size = 18),
+  )
+pred_ACD
+pred_CD
+pred_MI
+pred_CVA
+# ==============================================================================
 
 # ==============================================================================
 # KM plot
@@ -542,9 +638,19 @@ res_cva <- do.call('rbind', lst_cva)
 # print(ztable(res_cva, digits = 3), type="viewer")
 
 ## graph
-# size는 1200*900
-ggplot(res_acd, aes(x = HR, y = GFR))+
-  xlim(0.1, 3.3)+
+# size는 1200*600
+res_acd
+table_acd <- data.frame(
+  #GFR = c("60 <=", "45 <= < 60", "30 <= < 45", "< 30"),
+  HR = c("0.706", "1.295", "1.394", "1.362"),
+  CI = c("0.534 - 0.932", "0.792 - 2.118", "0.898 - 2.162", "0.982 - 1.888"),
+  P = c("0.014", "0.303", "0.138", "0.064"),
+  stringsAsFactors = FALSE # 문자열을 팩터(factor)로 자동 변환하지 않음
+)
+colnames(table_acd) <- c('HR', '95% CI', 'p value')
+
+hr_acd <- ggplot(res_acd, aes(x = HR, y = GFR))+
+  xlim(0.1, 2.5)+
   theme_bw()+
   ggtitle("All cause death")+
   xlab("Hazard Ratio")+ylab("eGFR (mL/min/1.73m^2)")+
@@ -553,8 +659,30 @@ ggplot(res_acd, aes(x = HR, y = GFR))+
   geom_point(size = 3)+
   geom_vline(xintercept = 1, col='red', linewidth = 1.5, linetype = 1)+
   scale_y_discrete(limits = seq_min)
-res_acd
-ggplot(res_cd, aes(x = HR, y = GFR))+
+
+tg_acd <- tableGrob(table_acd, rows = NULL, 
+                   theme = ttheme_minimal(
+                     base_size = 15, # 글자 크기 조정
+                     core = list(fg_params = list(hjust = 0, x = 0.2, y = 0.9),
+                                 bg_params = list(fill = NA))))
+tg_acd$widths <- unit(c(20, 50, 20), "mm")
+tg_acd$heights[[1]] <- unit(40, "mm")
+tg_acd$heights[[2]] <- unit(31, "mm")
+tg_acd$heights[[3]] <- unit(31, "mm")
+tg_acd$heights[[4]] <- unit(31, "mm")
+tg_acd$heights[[5]] <- unit(51, "mm")
+grid.arrange(hr_acd, tg_acd, ncol = 2, widths = c(2, 1))
+
+res_cd
+table_cd <- data.frame(
+  #GFR = c("60 <=", "45 <= < 60", "30 <= < 45", "< 30"),
+  HR = c("0.880", "1.127", "1.693", "1.332"),
+  CI = c("0.598 - 1.295", "0.635 - 2.001", "0.933 - 3.070", "0.889 - 1.998"),
+  P = c("0.515", "0.683", "0.083", "0.165"),
+  stringsAsFactors = FALSE # 문자열을 팩터(factor)로 자동 변환하지 않음
+)
+colnames(table_cd) <- c('HR', '95% CI', 'p value')
+hr_cd <- ggplot(res_cd, aes(x = HR, y = GFR))+
   xlim(0.1, 3.3)+
   theme_bw()+
   ggtitle("Cardiac death")+
@@ -564,7 +692,19 @@ ggplot(res_cd, aes(x = HR, y = GFR))+
   geom_point(size = 3)+
   geom_vline(xintercept = 1, col='red', linewidth = 1.5, linetype = 1)+
   scale_y_discrete(limits = seq_min)
-res_cd
+tg_cd <- tableGrob(table_cd, rows = NULL, 
+                    theme = ttheme_minimal(
+                      base_size = 15, # 글자 크기 조정
+                      core = list(fg_params = list(hjust = 0, x = 0.2, y = 0.9),
+                                  bg_params = list(fill = NA))))
+tg_cd$widths <- unit(c(20, 50, 20), "mm")
+tg_cd$heights[[1]] <- unit(40, "mm")
+tg_cd$heights[[2]] <- unit(31, "mm")
+tg_cd$heights[[3]] <- unit(31, "mm")
+tg_cd$heights[[4]] <- unit(31, "mm")
+tg_cd$heights[[5]] <- unit(51, "mm")
+grid.arrange(hr_cd, tg_cd, ncol = 2, widths = c(2, 1))
+
 ggplot(res_mi, aes(x = HR, y = GFR))+
   xlim(0.1, 3.3)+
   theme_bw()+
