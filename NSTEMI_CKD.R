@@ -237,15 +237,23 @@ acd12_PRF_km$plot <- acd12_PRF_km$plot + annotate("text", x = 1, y = 0.83, size 
 #acd12_PRF_km$plot <- acd12_PRF_km$plot + annotate("text", x = 1, y = 0.81, size = 6, hjust = 0,
 #                                                  label = "Adjusted hazard ratio 0.95 (95% CI 0.70 - 1.29)")
 acd12_PRF_km
-acd12_PRF_km2 <- ggsurvplot(acd12_PRF, title = "Normal Renal Function", legend = c(0.15, 0.4), legend.title = "",
+acd12_PRF_km2 <- ggsurvplot(acd12_PRF, title = "Preserved Renal Function", legend = c(0.15, 0.4), legend.title = "",
                             legend.labs = c('DIS', 'EIS'),
                             censor = F, risk.table = F,
-                            conf.int = F, pval = T, pval.size = 11, pval.coord = c(1, 0.83),
+                            conf.int = F, pval = T, pval.size = 14, pval.coord = c(1, 0.83),
                             break.time.by = 90, xlim = c(0, 365), ylim = c(0.8, 1.0),
-                            xlab = "Time(days)", ylab = "Probability",
-                            font.main = c(40, "bold"), font.x = c(27, "bold"), font.xlab = c(27), font.y = c(27, "bold"), font.ylab = c(27),
-                            font.legend = c(24, "bold"), font.tickslab = c(27))
+                            xlab = "Time(days)", ylab = "",
+                            font.main = c(60, "bold"), font.x = c(36, "bold"), font.xlab = c(36), font.y = c(36, "bold"), font.ylab = c(36),
+                            font.legend = c(32, "bold"), font.tickslab = c(36),
+                            ggtheme = theme(
+                              plot.title=element_text(hjust=1),
+                              panel.background = element_rect(fill=NA, color=NA),
+                              plot.background = element_rect(fill=NA, color=NA),
+                              legend.background = element_rect(fill=NA, color=NA),
+                              legend.box.background = element_rect(fill=NA, color=NA),
+                              axis.line = element_line(color="black")))
 acd12_PRF_km2
+ggsave("ggplotTransparentBGSampleImage.png")
 
 cd12_PRF <- survfit(Surv(cdfu, cd12) ~ PCI_group, data = df_PRF)
 cd12_PRF_km <- ggsurvplot(cd12_PRF, title = "Cardiac Death (eGFR >= 60)", legend = c(0.15, 0.2), legend.title = "", 
@@ -289,14 +297,22 @@ acd12_DRF_km$plot <- acd12_DRF_km$plot + annotate("text", x = 1, y = 0.83, size 
 #                                                  label = "Adjusted hazard ratio 1.43 (95% CI 1.12 - 1.83)")
 acd12_DRF_km
 acd12_DRF_km2 <- ggsurvplot(acd12_DRF, title = "Decreased Renal Function", legend = c(0.15, 0.4), legend.title = "",
-                           legend.labs = c('DIS', 'EIS'),
-                           censor = F, risk.table = F,
-                           conf.int = F, pval = T, pval.size = 11, pval.coord = c(1, 0.83),
-                           break.time.by = 90, xlim = c(0, 365), ylim = c(0.8, 1.0),
-                           xlab = "Time(days)", ylab = "Probability",
-                           font.main = c(40, "bold"), font.x = c(27, "bold"), font.xlab = c(27), font.y = c(27, "bold"), font.ylab = c(27),
-                           font.legend = c(24, "bold"), font.tickslab = c(27))
+                            legend.labs = c('DIS', 'EIS'),
+                            censor = F, risk.table = F,
+                            conf.int = F, pval = T, pval.size = 14, pval.coord = c(1, 0.83),
+                            break.time.by = 90, xlim = c(0, 365), ylim = c(0.8, 1.0),
+                            xlab = "Time(days)", ylab = "",
+                            font.main = c(60, "bold"), font.x = c(36, "bold"), font.xlab = c(36), font.y = c(36, "bold"), font.ylab = c(36),
+                            font.legend = c(32, "bold"), font.tickslab = c(36),
+                            ggtheme = theme(
+                              plot.title=element_text(hjust=1),
+                              panel.background = element_rect(fill=NA, color=NA),
+                              plot.background = element_rect(fill=NA, color=NA),
+                              legend.background = element_rect(fill=NA, color=NA),
+                              legend.box.background = element_rect(fill=NA, color=NA),
+                              axis.line = element_line(color="black")))
 acd12_DRF_km2
+ggsave("ggplotTransparentBGSampleImage2.png")
 
 cd12_DRF <- survfit(Surv(cdfu, cd12) ~ PCI_group, data = df_DRF)
 cd12_DRF_km <- ggsurvplot(cd12_DRF, title = "Cardiac Death (eGFR < 60)", legend = c(0.15, 0.2), legend.title = "", 
@@ -723,6 +739,28 @@ tg_cd$heights[[3]] <- unit(31, "mm")
 tg_cd$heights[[4]] <- unit(31, "mm")
 tg_cd$heights[[5]] <- unit(51, "mm")
 grid.arrange(hr_cd, tg_cd, ncol = 2, widths = c(2, 1))
+
+ggplot(res_acd, aes(x = HR, y = GFR))+
+  xlim(0.1, 3.3)+
+  theme_bw()+
+  ggtitle("")+
+  xlab("")+ylab("")+
+  theme(axis.title=element_text(size=32, face="bold"), axis.text.x=element_text(size=24, face="bold"), axis.text.y=element_text(size=24, face="bold"))+
+  geom_errorbar(aes(xmin = lwr.95, xmax = upr.95), width=0.3, size=1.5)+
+  geom_point(size=4)+
+  geom_vline(xintercept = 1, col='red', linewidth = 1.5, linetype = 1)+
+  scale_y_discrete(limits = seq_min)+
+  scale_x_continuous(breaks=c(0, 0.5, 1, 1.5, 2, 2.5))+
+  theme(
+    plot.title=element_text(hjust=1),
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
+ggsave("ggplotTransparentBGSampleImage3.png")
 
 ggplot(res_mi, aes(x = HR, y = GFR))+
   xlim(0.1, 3.3)+
