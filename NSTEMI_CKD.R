@@ -237,6 +237,16 @@ acd12_PRF_km$plot <- acd12_PRF_km$plot + annotate("text", x = 1, y = 0.83, size 
 #acd12_PRF_km$plot <- acd12_PRF_km$plot + annotate("text", x = 1, y = 0.81, size = 6, hjust = 0,
 #                                                  label = "Adjusted hazard ratio 0.95 (95% CI 0.70 - 1.29)")
 acd12_PRF_km
+acd12_PRF_km2 <- ggsurvplot(acd12_PRF, title = "Normal Renal Function", legend = c(0.15, 0.4), legend.title = "",
+                            legend.labs = c('DIS', 'EIS'),
+                            censor = F, risk.table = F,
+                            conf.int = F, pval = T, pval.size = 11, pval.coord = c(1, 0.83),
+                            break.time.by = 90, xlim = c(0, 365), ylim = c(0.8, 1.0),
+                            xlab = "Time(days)", ylab = "Probability",
+                            font.main = c(40, "bold"), font.x = c(27, "bold"), font.xlab = c(27), font.y = c(27, "bold"), font.ylab = c(27),
+                            font.legend = c(24, "bold"), font.tickslab = c(27))
+acd12_PRF_km2
+
 cd12_PRF <- survfit(Surv(cdfu, cd12) ~ PCI_group, data = df_PRF)
 cd12_PRF_km <- ggsurvplot(cd12_PRF, title = "Cardiac Death (eGFR >= 60)", legend = c(0.15, 0.2), legend.title = "", 
                           legend.labs = c('DIS', 'EIS'),
@@ -278,6 +288,15 @@ acd12_DRF_km$plot <- acd12_DRF_km$plot + annotate("text", x = 1, y = 0.83, size 
 #acd12_DRF_km$plot <- acd12_DRF_km$plot + annotate("text", x = 1, y = 0.81, size = 6, hjust = 0,
 #                                                  label = "Adjusted hazard ratio 1.43 (95% CI 1.12 - 1.83)")
 acd12_DRF_km
+acd12_DRF_km2 <- ggsurvplot(acd12_DRF, title = "Decreased Renal Function", legend = c(0.15, 0.4), legend.title = "",
+                           legend.labs = c('DIS', 'EIS'),
+                           censor = F, risk.table = F,
+                           conf.int = F, pval = T, pval.size = 11, pval.coord = c(1, 0.83),
+                           break.time.by = 90, xlim = c(0, 365), ylim = c(0.8, 1.0),
+                           xlab = "Time(days)", ylab = "Probability",
+                           font.main = c(40, "bold"), font.x = c(27, "bold"), font.xlab = c(27), font.y = c(27, "bold"), font.ylab = c(27),
+                           font.legend = c(24, "bold"), font.tickslab = c(27))
+acd12_DRF_km2
 
 cd12_DRF <- survfit(Surv(cdfu, cd12) ~ PCI_group, data = df_DRF)
 cd12_DRF_km <- ggsurvplot(cd12_DRF, title = "Cardiac Death (eGFR < 60)", legend = c(0.15, 0.2), legend.title = "", 
