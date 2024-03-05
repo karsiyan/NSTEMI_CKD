@@ -1,4 +1,4 @@
-req_lib <- c('epiDisplay','lubridate','moonBook','ztable','survminer','knitr','kableExtra','tidyr','survivalAnalysis','rms','survival','dplyr','ggplot2','VIM','analyzer','pec')
+req_lib <- c('epiDisplay','lubridate','moonBook','ztable','survminer','knitr','kableExtra','tidyr','survivalAnalysis','rms','survival','dplyr','ggplot2','VIM','analyzer','pec','grid','gridExtra')
 for (pkg in req_lib) {
   if (!(pkg %in% rownames(installed.packages()))) {install.packages(pkg)}
   else {update.packages(pkg)
@@ -618,6 +618,10 @@ lst_acd <- list()
 lst_cd <- list()
 lst_mi <- list()
 lst_cva <- list()
+lst_acd_adjusted <- list()
+lst_cd_adjusted <- list()
+lst_mi_adjusted <- list()
+lst_cva_adjusted <- list()
 
 seq_min <- c('<30', '30<= <45', '45<= <60', '60<=')
 seq_max <- c('30<= <45', '45<= <60', '60<= <200', '200<=')
@@ -637,10 +641,20 @@ for (i in 1:length(seq_min)){
   fit_mi <- coxph(Surv(mifu, mi12) ~ PCI_time_2group_early, data = tmp_sub)
   fit_cva <- coxph(Surv(cvafu, cva12) ~ PCI_time_2group_early, data = tmp_sub)
   fit_in_death <- coxph(Surv(cvafu, cva12) ~ PCI_time_2group_early, data = tmp_sub)
+  fit_acd_adjusted <- coxph(Surv(acdfu, acd12) ~ PCI_time_2group_early+grace+Vessel_multi+Revasc+atri_fibril+Hb+male+age+BMI+Current_smoker+HTN+DM+Dyslipidemia+Prev_MI+Prev_PCI+Prev_CABG+Prev_CVA+SBP+Cardiogenic_shock+LVEF, data = tmp_sub)
+  fit_cd_adjusted <- coxph(Surv(cdfu, cd12) ~ PCI_time_2group_early+grace+Vessel_multi+Revasc+atri_fibril+Hb+male+age+BMI+Current_smoker+HTN+DM+Dyslipidemia+Prev_MI+Prev_PCI+Prev_CABG+Prev_CVA+SBP+Cardiogenic_shock+LVEF, data = tmp_sub)
+  fit_mi_adjusted <- coxph(Surv(mifu, mi12) ~ PCI_time_2group_early+grace+Vessel_multi+Revasc+atri_fibril+Hb+male+age+BMI+Current_smoker+HTN+DM+Dyslipidemia+Prev_MI+Prev_PCI+Prev_CABG+Prev_CVA+SBP+Cardiogenic_shock+LVEF, data = tmp_sub)
+  fit_cva_adjusted <- coxph(Surv(cvafu, cva12) ~ PCI_time_2group_early+grace+Vessel_multi+Revasc+atri_fibril+Hb+male+age+BMI+Current_smoker+HTN+DM+Dyslipidemia+Prev_MI+Prev_PCI+Prev_CABG+Prev_CVA+SBP+Cardiogenic_shock+LVEF, data = tmp_sub)
+  fit_in_death_adjusted <- coxph(Surv(cvafu, cva12) ~ PCI_time_2group_early+grace+Vessel_multi+Revasc+atri_fibril+Hb+male+age+BMI+Current_smoker+HTN+DM+Dyslipidemia+Prev_MI+Prev_PCI+Prev_CABG+Prev_CVA+SBP+Cardiogenic_shock+LVEF, data = tmp_sub)
+
   summ_acd <- summary(fit_acd)
   summ_cd <- summary(fit_cd)
   summ_mi <- summary(fit_mi)
   summ_cva <- summary(fit_cva)
+  summ_acd_adjusted <- summary(fit_acd_adjusted)
+  summ_cd_adjusted <- summary(fit_cd_adjusted)
+  summ_mi_adjusted <- summary(fit_mi_adjusted)
+  summ_cva_adjusted <- summary(fit_cva_adjusted)
   res_acd <- data.frame(GFR = seq_min[i],
                         Variable = names(fit_acd$coefficients),
                         HR = round(summ_acd$conf.int[, 1], 3),
@@ -650,10 +664,24 @@ for (i in 1:length(seq_min)){
   res_cd <- data.frame(GFR=seq_min[i],Variable=names(fit_cd$coefficients),HR=round(summ_cd$conf.int[, 1], 3),lwr.95=round(summ_cd$conf.int[, 3], 3),upr.95=round(summ_cd$conf.int[, 4], 3),p.val=round(summ_cd$coefficients[, 5], 3))
   res_mi <- data.frame(GFR=seq_min[i],Variable=names(fit_mi$coefficients),HR=round(summ_mi$conf.int[, 1], 3),lwr.95=round(summ_mi$conf.int[, 3], 3),upr.95=round(summ_mi$conf.int[, 4], 3),p.val=round(summ_mi$coefficients[, 5], 3))
   res_cva <- data.frame(GFR=seq_min[i],Variable=names(fit_cva$coefficients),HR=round(summ_cva$conf.int[, 1], 3),lwr.95=round(summ_cva$conf.int[, 3], 3),upr.95=round(summ_cva$conf.int[, 4], 3),p.val=round(summ_cva$coefficients[, 5], 3))
+  res_acd_adjusted <- data.frame(GFR = seq_min[i],
+                        Variable = names(fit_acd_adjusted$coefficients),
+                        HR = round(summ_acd_adjusted$conf.int[1, 1], 3),
+                        lwr.95 = round(summ_acd_adjusted$conf.int[1, 3], 3),
+                        upr.95 = round(summ_acd_adjusted$conf.int[1, 4], 3),
+                        p.val = round(summ_acd_adjusted$coefficients[1, 5], 3))
+  res_cd_adjusted <- data.frame(GFR=seq_min[i],Variable=names(fit_cd_adjusted$coefficients[1]),HR=round(summ_cd_adjusted$conf.int[1, 1], 3),lwr.95=round(summ_cd_adjusted$conf.int[1, 3], 3),upr.95=round(summ_cd_adjusted$conf.int[1, 4], 3),p.val=round(summ_cd_adjusted$coefficients[1, 5], 3))
+  res_mi_adjusted <- data.frame(GFR=seq_min[i],Variable=names(fit_mi_adjusted$coefficients[1]),HR=round(summ_mi_adjusted$conf.int[1, 1], 3),lwr.95=round(summ_mi_adjusted$conf.int[1, 3], 3),upr.95=round(summ_mi_adjusted$conf.int[1, 4], 3),p.val=round(summ_mi_adjusted$coefficients[1, 5], 3))
+  res_cva_adjusted <- data.frame(GFR=seq_min[i],Variable=names(fit_cva_adjusted$coefficients[1]),HR=round(summ_cva_adjusted$conf.int[1, 1], 3),lwr.95=round(summ_cva_adjusted$conf.int[1, 3], 3),upr.95=round(summ_cva_adjusted$conf.int[1, 4], 3),p.val=round(summ_cva_adjusted$coefficients[1, 5], 3))
+  
   lst_acd[[i]] <- res_acd
   lst_cd[[i]] <- res_cd
   lst_mi[[i]] <- res_mi
-  lst_cva[[i]] <- res_cva}
+  lst_cva[[i]] <- res_cva
+  lst_acd_adjusted[[i]] <- res_acd_adjusted[1,]
+  lst_cd_adjusted[[i]] <- res_cd_adjusted[1,]
+  lst_mi_adjusted[[i]] <- res_mi_adjusted[1,]
+  lst_cva_adjusted[[i]] <- res_cva_adjusted[1,]}
 tmp_sub90 = subset(tmp, GFR >= 60)
 tmp_sub60 = subset(tmp, GFR >= 45 & GFR < 60)
 tmp_sub45 = subset(tmp, GFR >= 30 & GFR < 45)
@@ -666,6 +694,10 @@ res_acd <- do.call('rbind', lst_acd)
 res_cd <- do.call('rbind', lst_cd)
 res_mi <- do.call('rbind', lst_mi)
 res_cva <- do.call('rbind', lst_cva)
+res_acd_adjusted <- do.call('rbind', lst_acd_adjusted)
+res_cd_adjusted <- do.call('rbind', lst_cd_adjusted)
+res_mi_adjusted <- do.call('rbind', lst_mi_adjusted)
+res_cva_adjusted <- do.call('rbind', lst_cva_adjusted)
 
 # print(ztable(res_acd, digits = 3), type="viewer")
 # print(ztable(res_cd, digits = 3), type="viewer")
@@ -784,6 +816,48 @@ ggplot(res_cva, aes(x = HR, y = GFR))+
   geom_vline(xintercept = 1, col='red', linewidth = 1.5, linetype = 1)+
   scale_y_discrete(limits = seq_min)
 res_cva
+
+ggplot(res_acd_adjusted, aes(x = HR, y = GFR))+
+  xlim(0.1, 3.3)+
+  theme_bw()+
+  ggtitle("ACD")+
+  xlab("Hazard Ratio")+ylab("eGFR (mL/min/1.73m^2)")+
+  theme(title=element_text(size=20, face="bold"), axis.title=element_text(size=18, face="bold"), axis.text.x=element_text(size=14, face="bold"), axis.text.y=element_text(size=14, face="bold"))+
+  geom_errorbar(aes(xmin = lwr.95, xmax = upr.95), width=0.2, size=1)+
+  geom_point(size = 3)+
+  geom_vline(xintercept = 1, col='red', linewidth = 1.5, linetype = 1)+
+  scale_y_discrete(limits = seq_min)
+ggplot(res_cd_adjusted, aes(x = HR, y = GFR))+
+  xlim(0.1, 3.3)+
+  theme_bw()+
+  ggtitle("CD")+
+  xlab("Hazard Ratio")+ylab("eGFR (mL/min/1.73m^2)")+
+  theme(title=element_text(size=20, face="bold"), axis.title=element_text(size=18, face="bold"), axis.text.x=element_text(size=14, face="bold"), axis.text.y=element_text(size=14, face="bold"))+
+  geom_errorbar(aes(xmin = lwr.95, xmax = upr.95), width=0.2, size=1)+
+  geom_point(size = 3)+
+  geom_vline(xintercept = 1, col='red', linewidth = 1.5, linetype = 1)+
+  scale_y_discrete(limits = seq_min)
+ggplot(res_mi_adjusted, aes(x = HR, y = GFR))+
+  xlim(0.1, 3.3)+
+  theme_bw()+
+  ggtitle("MI")+
+  xlab("Hazard Ratio")+ylab("eGFR (mL/min/1.73m^2)")+
+  theme(title=element_text(size=20, face="bold"), axis.title=element_text(size=18, face="bold"), axis.text.x=element_text(size=14, face="bold"), axis.text.y=element_text(size=14, face="bold"))+
+  geom_errorbar(aes(xmin = lwr.95, xmax = upr.95), width=0.2, size=1)+
+  geom_point(size = 3)+
+  geom_vline(xintercept = 1, col='red', linewidth = 1.5, linetype = 1)+
+  scale_y_discrete(limits = seq_min)
+ggplot(res_cva_adjusted, aes(x = HR, y = GFR))+
+  xlim(0.1, 3.3)+
+  theme_bw()+
+  ggtitle("CVA")+
+  xlab("Hazard Ratio")+ylab("eGFR (mL/min/1.73m^2)")+
+  theme(title=element_text(size=20, face="bold"), axis.title=element_text(size=18, face="bold"), axis.text.x=element_text(size=14, face="bold"), axis.text.y=element_text(size=14, face="bold"))+
+  geom_errorbar(aes(xmin = lwr.95, xmax = upr.95), width=0.2, size=1)+
+  geom_point(size = 3)+
+  geom_vline(xintercept = 1, col='red', linewidth = 1.5, linetype = 1)+
+  scale_y_discrete(limits = seq_min)
+
 
 # ==============================================================================
 # interaction term
